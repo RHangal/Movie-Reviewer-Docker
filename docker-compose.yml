@@ -1,0 +1,32 @@
+version: "3.3"
+services:
+  nginx:
+    depends_on:
+      - client
+      - api
+    restart: always # because it is routing traffic to our entire app
+    build:
+      dockerfile: Dockerfile
+      context: ./movies-nginx
+    ports:
+      - "80:80"
+  client:
+    build:
+      context: ./movie-client
+      dockerfile: Dockerfile
+    #ports:
+    #  - '3000:3000'
+    volumes:
+      - /app/node_modules # Inside the container, don't try to override this folder, just leave as is
+    restart: on-failure
+    container_name: client
+  api:
+    build:
+      context: ./movies
+      dockerfile: Dockerfile
+    # ports:
+    #   - "8080:8080"
+    restart: unless-stopped
+    container_name: api
+    env_file:
+      - ./movies/target/classes/.env
